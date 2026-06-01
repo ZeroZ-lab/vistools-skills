@@ -1,57 +1,29 @@
 # vistools Skills
 
-AI agent skills for [vistools](https://github.com/zhengjianqiao/vistolls) — visual analysis tools for AI coding assistants.
-
-## Prerequisites
-
-Install the `vistools` CLI first:
-
-```bash
-git clone https://github.com/zhengjianqiao/vistolls
-cd vistolls
-cargo install --path crates/cli
-```
-
-Verify: `vistools --version`
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — visual analysis tools for AI coding assistants.
 
 ## Installation
 
-### Claude Code (Plugin — Recommended)
-
 ```bash
-/plugin install https://github.com/zhengjianqiao/vistolls-skills
+/plugin install https://github.com/ZeroZ-lab/vistools-skills
 ```
 
-Then use:
-```
-/vistools screenshot.png
-```
-
-### Cursor
-
-```bash
-# Copy rule file
-mkdir -p .cursor/rules
-curl -o .cursor/rules/vistools.mdc \
-  https://raw.githubusercontent.com/zhengjianqiao/vistolls-skills/main/skills/cursor/vistools.mdc
-```
-
-### Codex
-
-```bash
-# Append to AGENTS.md
-curl -s https://raw.githubusercontent.com/zhengjianqiao/vistolls-skills/main/skills/codex/AGENTS.md >> AGENTS.md
-```
+Binaries for macOS (arm64/x64) and Linux (arm64/x64) are bundled automatically via CI.
 
 ## Usage
 
-Once installed, the skill provides intelligent image analysis workflows:
+**`/vistools <image> [focus]`**
 
-- **Inspect**: Get image dimensions, format, and recommended next steps
-- **Overview**: Generate scaled preview for large images (>1568px)
-- **Tile**: Split into grid for systematic analysis
-- **Viewport**: Crop specific regions with coordinate mapping
-- **Resize/Rotate**: Transform with coordinate back-reference
+```
+/vistools screenshot.png
+/vistools large-image.jpg "focus on the header"
+/vistools design.png "extract the login button"
+```
+
+Automated workflow:
+1. Inspect image → recommend overview/tile/viewport
+2. Generate outputs with coordinate mappings
+3. Report findings with source coordinates
 
 ### Example Workflow
 
@@ -70,33 +42,6 @@ vistools viewport rect screenshot.png bug.png \
   --x 2000 --y 1500 --width 500 --height 400
 ```
 
-## What's Included
-
-### Claude Code Skill
-
-**`/vistools <image> [focus]`**
-
-Automated workflow:
-1. Inspect image → recommend overview/tile/viewport
-2. Generate outputs with coordinate mappings
-3. Report findings with source coordinates
-
-### Cursor Rule
-
-Auto-attached when working with `.png/.jpg/.webp/.gif/.bmp/.tiff` files.
-
-Provides:
-- Command reference
-- Coordinate mapping guide
-- Error handling
-
-### Codex Instructions
-
-Project-level guidance for:
-- Workflow strategies
-- Output interpretation
-- Best practices
-
 ## Coordinate Mapping
 
 Every crop/resize/rotate returns `coordinate_mapping`:
@@ -114,15 +59,32 @@ Map output coordinates back to source:
 - **Resize**: `source = (result_x / scale + origin_x, result_y / scale + origin_y)`
 - **Rotate**: use formula string
 
+## Plugin Structure
+
+```
+.claude-plugin/
+└── plugin.json              # Plugin manifest
+
+skills/
+└── vistools/
+    └── SKILL.md             # Skill definition
+
+bin/
+├── vistools                 # Platform-detect wrapper
+├── vistools-macos-arm64     # CI-built binaries
+├── vistools-macos-x64
+├── vistools-linux-arm64
+└── vistools-linux-x64
+```
+
 ## Troubleshooting
 
-**"vistools: command not found"**
+**"vistools binary not found for platform"**
 
-Install the CLI:
+Compile from source (needs Rust 1.88+):
 ```bash
-git clone https://github.com/zhengjianqiao/vistolls
-cd vistolls
-cargo install --path crates/cli
+git clone https://github.com/ZeroZ-lab/vistools && cd vistools && cargo build --release
+cp target/release/vistools ../vistools-skills/bin/vistools-macos-arm64  # adjust for your platform
 ```
 
 **"Build failed"**
@@ -136,21 +98,13 @@ source ~/.cargo/env
 ## Uninstall
 
 ```bash
-# Claude Code
-/plugin uninstall vistools-skills
-
-# Cursor
-rm .cursor/rules/vistools.mdc
-
-# Codex
-# Manually remove appended section from AGENTS.md
+/plugin uninstall vistools
 ```
 
 ## Related
 
-- **[vistools](https://github.com/zhengjianqiao/vistolls)** — Rust CLI source code
-- **[AGENTS.md](skills/codex/AGENTS.md)** — Codex instructions
-- **[SKILL.md](skills/claude-code/vistools/SKILL.md)** — Claude Code skill definition
+- **[vistools](https://github.com/ZeroZ-lab/vistools)** — Rust CLI source code
+- **[SKILL.md](skills/vistools/SKILL.md)** — Skill definition
 
 ## License
 
