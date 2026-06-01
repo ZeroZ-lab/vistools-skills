@@ -1,13 +1,13 @@
 ---
-description: Visually inspect, navigate, and crop images using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
-when_to_use: Use when the user wants to analyze, crop, resize, rotate, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
+description: Visually inspect, navigate, crop, and sample images using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+when_to_use: Use when the user wants to analyze, crop, sample colors, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
 argument-hint: "<image-path> [focus or action]"
 arguments: [image, action]
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/vistools *) Bash(jq *) Bash(sips *) Bash(which *) Read
 paths: "**/*.{png,jpg,jpeg,webp,gif,bmp,tiff}"
 ---
 
-# vistools — Visual Tools for AI Agents
+# vistools — Visual Instruments for AI Agents
 
 You are analyzing an image using `vistools`. The image is: `$image`
 $action
@@ -24,15 +24,17 @@ Read the JSON output:
 - `data.source.width` × `data.source.height` — dimensions
 - `data.source.format` — "png", "jpeg", etc.
 - `data.suggestion.needs_overview` — `true` if long side > 1568px
+- `data.suggestion.recommended_next` — `"overview"` for large images, `"direct"` for small
 - `data.suggestion.max_tile_rows` × `max_tile_cols` — recommended grid
+- `data.suggestion.suggested_max_side` — recommended max side for overview
 
 ## Step 2: Decide What To Do
 
-**Small image** (`needs_overview: false`) → analyze directly, skip overview.
+**Small image** (`recommended_next: "direct"`) → analyze directly, skip overview.
 
-**Large image** (`needs_overview: true`) → generate overview first:
+**Large image** (`recommended_next: "overview"`) → generate overview first:
 ```bash
-${CLAUDE_SKILL_DIR}/scripts/vistools overview "$image" /tmp/iv-overview.png --max-width 1200 | jq .
+${CLAUDE_SKILL_DIR}/scripts/vistools overview "$image" /tmp/iv-overview.png --max-side 1200 | jq .
 ```
 Note the `scale_factor` — divide overview coordinates by it to get source coordinates.
 
@@ -57,7 +59,7 @@ Anchors: `top-left` | `top` | `top-right` | `left` | `center` | `right` | `botto
 ${CLAUDE_SKILL_DIR}/scripts/vistools viewport percent "$image" /tmp/iv-crop.png \
     --x 0.3 --y 0.3 --w 0.4 --h 0.4
 ```
-Values are fractions 0.0–1.0 of the source.
+Values are fractions 0.0–1.0 of the source. Strict: `x + w` and `y + h` must not exceed 1.0.
 
 ### D. Exact pixel crop (rect)
 ```bash
@@ -66,20 +68,25 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools viewport rect "$image" /tmp/iv-crop.png \
 ```
 Must not exceed source bounds — check with `inspect` first.
 
-### E. Resize
+## Step 4: Sample Colors (read-only, no output image)
+
+### Point color
 ```bash
-${CLAUDE_SKILL_DIR}/scripts/vistools resize "$image" /tmp/iv-resized.png --width 800              # proportional
-${CLAUDE_SKILL_DIR}/scripts/vistools resize "$image" /tmp/iv-resized.png --width 512 --height 512  # forced exact
+${CLAUDE_SKILL_DIR}/scripts/vistools sample "$image" --x 120 --y 80
 ```
+Returns `rgba`, `rgb`, `hex`, and `alpha` at that pixel.
 
-### F. Rotate
+### Region average color + alpha stats
 ```bash
-${CLAUDE_SKILL_DIR}/scripts/vistools rotate "$image" /tmp/iv-rotated.png --degrees 90   # 0, 90, 180, 270
+${CLAUDE_SKILL_DIR}/scripts/vistools sample "$image" --rect 100,80,40,40
 ```
+Returns rounded average color, `alpha_stats` (min, max, average, transparent_ratio), and `pixel_count`.
 
-## Step 4: Coordinate Back-Mapping
+Use `sample` to verify colors, detect transparency, or confirm what a specific pixel looks like — without relying on visual interpretation.
 
-Every output includes `coordinate_mapping`:
+## Step 5: Coordinate Back-Mapping
+
+Every generated image includes `coordinate_mapping`:
 ```json
 {
   "crop_origin_in_source": [960, 720],
@@ -94,9 +101,9 @@ Every output includes `coordinate_mapping`:
 
 **Practical use:** If you spot a UI bug at (150, 80) in the crop, and `crop_origin_in_source` is [960, 720], the bug is at **(1110, 800)** in the source image.
 
-## Step 5: Drill Down (recursive)
+## Step 6: Drill Down (recursive)
 
-Crop a crop to zoom in:
+Crop a crop to focus on a sub-region:
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/vistools viewport anchor /tmp/iv-crop1.png /tmp/iv-crop2.png \
     --anchor top-left --width 400 --height 300
@@ -113,8 +120,10 @@ All errors return `{"ok": false, "error": {"code": "...", "message": "..."}}`. P
 | `FILE_NOT_FOUND` | Image doesn't exist | Check path |
 | `UNSUPPORTED_FORMAT` | Can't decode | Not a valid image file |
 | `INVALID_COORDINATES` | Rect exceeds bounds | Check source dimensions with inspect |
-| `INVALID_PARAMETERS` | Bad tile count / degrees / width | Tile max 64, degrees ∈ {0,90,180,270} |
+| `INVALID_PARAMETERS` | Bad tile count / zero max side / malformed sample mode | Tile max 64 |
+| `INVALID_DIMENSIONS` | Zero width/height | Use positive values |
 | `OUTPUT_SAME_AS_INPUT` | Would overwrite source | Use a different output path |
+| `OUTPUT_WRITE_ERROR` | Could not write output | Check disk space / permissions |
 | `PIXEL_LIMIT_EXCEEDED` | > 100 megapixels | Use overview to scale down first |
 | `PATH_ESCAPE` | Path has `..` | Use absolute or relative without `..` |
 

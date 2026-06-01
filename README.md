@@ -1,6 +1,6 @@
 # vistools Skills
 
-Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — visual analysis tools for AI coding assistants.
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — visual instruments for AI coding assistants. Inspect, navigate, crop, and sample large images with structured JSON output and coordinate mapping.
 
 ## Installation
 
@@ -26,7 +26,8 @@ Binaries for macOS (arm64/x64) and Linux (arm64/x64) are bundled automatically v
 Automated workflow:
 1. Inspect image → recommend overview/tile/viewport
 2. Generate outputs with coordinate mappings
-3. Report findings with source coordinates
+3. Sample colors to verify pixels
+4. Report findings with source coordinates
 
 ### Example Workflow
 
@@ -36,18 +37,21 @@ Automated workflow:
 
 # Skill detects 3200x2400, recommends overview + tile
 # 2. Generate overview
-vistools overview screenshot.png overview.png --max-width 1200
+vistools overview screenshot.png overview.png --max-side 1200
 
 # 3. Find bug in overview at (800, 600)
 # 4. Map back to source: (800 / 0.375, 600 / 0.375) = (2133, 1600)
 # 5. Crop region in source
 vistools viewport rect screenshot.png bug.png \
   --x 2000 --y 1500 --width 500 --height 400
+
+# 6. Sample a pixel to verify its color
+vistools sample screenshot.png --x 2100 --y 1550
 ```
 
 ## Coordinate Mapping
 
-Every crop/resize/rotate returns `coordinate_mapping`:
+Every generated image returns `coordinate_mapping`:
 
 ```json
 {
@@ -59,8 +63,7 @@ Every crop/resize/rotate returns `coordinate_mapping`:
 
 Map output coordinates back to source:
 - **Crop**: `source = (result_x + origin_x, result_y + origin_y)`
-- **Resize**: `source = (result_x / scale + origin_x, result_y / scale + origin_y)`
-- **Rotate**: use formula string
+- **Overview (scaled)**: `source = (result_x / scale + origin_x, result_y / scale + origin_y)`
 
 ## Plugin Structure
 

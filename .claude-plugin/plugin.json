@@ -1,20 +1,13 @@
 {
   "name": "vistools",
   "displayName": "Vistools",
-  "version": "0.3.1",
-  "description": "Visual tools for AI agents — inspect, navigate, and crop large images with structured JSON output and coordinate mapping.",
+  "version": "0.4.0",
+  "description": "Visual instruments for AI agents — inspect, navigate, crop, and sample large images. Every command returns structured JSON with coordinate mapping back to the source.",
   "author": {
     "name": "Zheng Jianqiao"
   },
   "homepage": "https://github.com/ZeroZ-lab/vistools",
   "repository": "https://github.com/ZeroZ-lab/vistools-skills",
   "license": "MIT OR Apache-2.0",
-  "keywords": [
-    "image",
-    "viewport",
-    "screenshot",
-    "ui-verification",
-    "crop",
-    "resize"
-  ]
+  "keywords": ["image", "viewport", "screenshot", "ui-verification", "crop", "sample", "color-picker"]
 }
