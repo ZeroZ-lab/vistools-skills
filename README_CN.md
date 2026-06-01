@@ -133,7 +133,7 @@ skills/
 
 | 插件版本 | 捆绑 CLI 版本 | 构建来源 |
 |---------|-------------|---------|
-| 0.5.0 | 0.2.1 | [vistools v0.2.1](https://github.com/ZeroZ-lab/vistools) |
+| 0.5.1 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
 
 验证本地二进制：`skills/vistools/scripts/vistools --version`
 

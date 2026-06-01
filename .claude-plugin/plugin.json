@@ -1,7 +1,7 @@
 {
   "name": "vistools",
   "displayName": "Vistools",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Visual instruments for AI agents — inspect, navigate, crop, and sample large images. Every command returns structured JSON with coordinate mapping back to the source.",
   "author": {
     "name": "ZeroZ-lab"
