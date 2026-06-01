@@ -1,6 +1,12 @@
+**[中文文档](README_CN.md)** | English
+
 # vistools Skills
 
 Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — visual instruments for AI coding assistants. Inspect, navigate, crop, and sample large images with structured JSON output and coordinate mapping.
+
+## Why
+
+Claude Code struggles with large images — reading a 3200×2400 screenshot directly loses fine detail and can exceed context limits. `vistools` solves this by giving Claude a set of image tools: inspect dimensions, generate scaled overviews, crop precise regions, and sample individual pixels. Every operation returns structured JSON with **coordinate mappings** so Claude can always trace what it sees back to the source image.
 
 ## Installation
 
@@ -17,6 +23,8 @@ Binaries for macOS (arm64/x64) and Linux (arm64/x64) are bundled automatically v
 
 **`/vistools <image> [focus]`**
 
+The `focus` argument is an optional natural-language instruction that tells Claude what to look for or do. It is interpreted by the AI, not parsed as a CLI flag.
+
 ```
 /vistools screenshot.png
 /vistools large-image.jpg "focus on the header"
@@ -31,17 +39,19 @@ Automated workflow:
 
 ### Example Workflow
 
+> Commands prefixed with `/vistools` are typed by you in the chat. Commands prefixed with `vistools` (no slash) are run by Claude internally.
+
 ```bash
-# 1. Inspect large screenshot
+# 1. You invoke the skill on a large screenshot
 /vistools screenshot.png
 
-# Skill detects 3200x2400, recommends overview + tile
-# 2. Generate overview
+# Claude sees 3200×2400 and decides to generate a scaled overview
+# 2. Overview (Claude runs this internally)
 vistools overview screenshot.png overview.png --max-side 1200
 
-# 3. Find bug in overview at (800, 600)
-# 4. Map back to source: (800 / 0.375, 600 / 0.375) = (2133, 1600)
-# 5. Crop region in source
+# 3. You spot a bug in the overview at approx. (800, 600)
+# 4. Claude maps back to source: (800 / 0.375, 600 / 0.375) = (2133, 1600)
+# 5. Crop the region from the source image
 vistools viewport rect screenshot.png bug.png \
   --x 2000 --y 1500 --width 500 --height 400
 
@@ -73,9 +83,10 @@ Map output coordinates back to source:
 
 skills/
 └── vistools/
-    ├── SKILL.md             # Skill definition
+    ├── SKILL.md             # Skill definition (instructions for Claude)
     └── scripts/
-        ├── vistools                 # Platform-detect wrapper
+        ├── vistools                 # Bash wrapper — detects OS/arch and
+                                     # runs the matching binary below
         ├── vistools-macos-arm64     # CI-built binaries
         ├── vistools-macos-x64
         ├── vistools-linux-arm64

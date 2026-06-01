@@ -149,6 +149,15 @@ After analysis, report:
 3. **Findings**: what you observed in each region
 4. **Source coordinates**: where issues are in the original image (using coordinate_mapping)
 
+## Help & Version
+
+If you need a quick reference on any command's flags:
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools --help             # list all commands
+${CLAUDE_SKILL_DIR}/scripts/vistools inspect --help     # subcommand details
+${CLAUDE_SKILL_DIR}/scripts/vistools --version          # e.g. "vistools 0.2.0"
+```
+
 ## Manual Build (advanced)
 
 If the wrapper reports a missing binary for your platform:
@@ -159,3 +168,8 @@ cp target/release/vistools ${CLAUDE_SKILL_DIR}/scripts/vistools-$(uname -s | tr 
 ```
 
 Or [open an issue](https://github.com/ZeroZ-lab/vistools/issues) with your OS and architecture details.
+
+## Links
+
+- **Source repo**: [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools) — Rust CLI source code, tests, and design docs
+- **Skills repo**: [ZeroZ-lab/vistools-skills](https://github.com/ZeroZ-lab/vistools-skills) — Claude Code plugin, Cursor rule, Codex instructions
