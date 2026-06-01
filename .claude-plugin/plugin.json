@@ -1,7 +1,7 @@
 {
   "name": "vistools",
   "displayName": "Vistools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Visual tools for AI agents — inspect, navigate, and crop large images with structured JSON output and coordinate mapping.",
   "author": {
     "name": "Zheng Jianqiao"
