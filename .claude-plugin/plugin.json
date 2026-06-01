@@ -11,5 +11,6 @@
   "license": "MIT OR Apache-2.0",
   "keywords": ["image", "viewport", "screenshot", "ui-verification", "crop", "resize"],
   "defaultEnabled": true,
-  "skills": "./skills/claude-code/"
+  "skills": "./skills/claude-code/",
+  "bin": "./bin/"
 }

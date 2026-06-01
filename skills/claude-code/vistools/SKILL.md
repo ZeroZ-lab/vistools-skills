@@ -138,14 +138,15 @@ After analysis, report:
 3. **Findings**: what you observed in each region
 4. **Source coordinates**: where issues are in the original image (using coordinate_mapping)
 
-## Setup (if vistools not found)
+## Setup
 
-If `which vistools` fails, run this one-liner to install from source (needs Rust 1.88+):
+The `vistools` CLI binary is bundled with the plugin and automatically added to PATH when you install via `/plugin install`. No manual setup needed.
+
+**If `which vistools` fails** (plugin binary not found):
 
 ```bash
+# Install from source (needs Rust 1.88+)
 git clone https://github.com/zhengjianqiao/vistolls && cd vistolls && cargo install --path crates/cli
 ```
 
-Or download a pre-built binary from [GitHub Releases](https://github.com/zhengjianqiao/vistolls/releases) (when available).
-
-After install, verify: `vistools --version`
+Verify: `vistools --version`
