@@ -6,11 +6,8 @@
   "author": {
     "name": "Zheng Jianqiao"
   },
-  "homepage": "https://github.com/zhengjianqiao/vistolls",
-  "repository": "https://github.com/zhengjianqiao/vistolls",
+  "homepage": "https://github.com/ZeroZ-lab/vistools",
+  "repository": "https://github.com/ZeroZ-lab/vistools-skills",
   "license": "MIT OR Apache-2.0",
-  "keywords": ["image", "viewport", "screenshot", "ui-verification", "crop", "resize"],
-  "defaultEnabled": true,
-  "skills": "./skills/claude-code/",
-  "bin": "./bin/"
+  "keywords": ["image", "viewport", "screenshot", "ui-verification", "crop", "resize"]
 }
