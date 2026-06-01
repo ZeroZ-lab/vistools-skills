@@ -67,14 +67,13 @@ Map output coordinates back to source:
 
 skills/
 └── vistools/
-    └── SKILL.md             # Skill definition
-
-bin/
-├── vistools                 # Platform-detect wrapper
-├── vistools-macos-arm64     # CI-built binaries
-├── vistools-macos-x64
-├── vistools-linux-arm64
-└── vistools-linux-x64
+    ├── SKILL.md             # Skill definition
+    └── scripts/
+        ├── vistools                 # Platform-detect wrapper
+        ├── vistools-macos-arm64     # CI-built binaries
+        ├── vistools-macos-x64
+        ├── vistools-linux-arm64
+        └── vistools-linux-x64
 ```
 
 ## Troubleshooting
@@ -84,7 +83,7 @@ bin/
 Compile from source (needs Rust 1.88+):
 ```bash
 git clone https://github.com/ZeroZ-lab/vistools && cd vistools && cargo build --release
-cp target/release/vistools ../vistools-skills/bin/vistools-macos-arm64  # adjust for your platform
+cp target/release/vistools ../vistools-skills/skills/vistools/scripts/vistools-macos-arm64  # adjust for your platform
 ```
 
 **"Build failed"**
