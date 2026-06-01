@@ -38,6 +38,23 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools overview "$image" /tmp/iv-overview.png --ma
 ```
 Note the `scale_factor` — divide overview coordinates by it to get source coordinates.
 
+## Decision Policy
+
+Follow these rules when choosing commands:
+
+- **Always inspect first.** Never assume image dimensions.
+- **Long side > 1568px → overview before any visual analysis.**
+- **User asks about a specific area but gives no coordinates →** generate overview, then infer approximate region from the overview.
+- **Making a visual claim about color →** use `sample` to verify with pixel data, not visual perception.
+- **Reporting a UI defect →** always include source coordinates via `coordinate_mapping`.
+- **Crop coordinates uncertain →** state "approximate" and prefer a larger crop over a too-tight one.
+- **Image unchanged after modification →** skip further navigation, report "no visual change detected."
+
+### When to stop drilling down
+- You can clearly read the text/UI element you're investigating.
+- Further crops no longer reveal new information.
+- You've chained 3 crops deep — stop and report what you found.
+
 ## Step 3: Navigate — Pick Your Strategy
 
 ### A. Grid (full coverage)
@@ -127,6 +144,19 @@ All errors return `{"ok": false, "error": {"code": "...", "message": "..."}}`. P
 | `PIXEL_LIMIT_EXCEEDED` | > 100 megapixels | Use overview to scale down first |
 | `PATH_ESCAPE` | Path has `..` | Use absolute or relative without `..` |
 
+### Recovery Policy
+
+When a command fails, try to recover before asking the user:
+
+| Error | Recovery |
+|-------|----------|
+| `INVALID_COORDINATES` | Re-run `inspect` → clamp rect to source bounds → retry once |
+| `PIXEL_LIMIT_EXCEEDED` | Run `overview` with smaller `--max-side` first, then operate on the overview |
+| `UNSUPPORTED_FORMAT` | Suggest converting with `sips -s format png` (macOS) or ask user to provide PNG/JPEG |
+| `INVALID_PARAMETERS` | Re-read the flag requirements from `--help` and correct the call |
+| `FILE_NOT_FOUND` | Check path spelling, try absolute path |
+| `OUTPUT_SAME_AS_INPUT` | Add a suffix: `crop.png` → `crop-vp.png` |
+
 ## Output Format
 
 Every command returns the same envelope on stdout:
@@ -141,13 +171,29 @@ Every command returns the same envelope on stdout:
 }
 ```
 
-## Report Format
+## Report Templates
 
-After analysis, report:
+Choose the template that matches the task:
+
+### General Visual Analysis
 1. **Image profile**: dimensions, format, whether it needed scaling
-2. **Navigation path**: which regions you explored and why
-3. **Findings**: what you observed in each region
-4. **Source coordinates**: where issues are in the original image (using coordinate_mapping)
+2. **Navigation path**: which regions explored and why
+3. **Findings**: observations in each region
+4. **Source coordinates**: where issues are in the original image
+
+### UI Bug Report
+1. **Component**: what UI element is affected
+2. **Source coordinates**: exact location via `coordinate_mapping`
+3. **Expected vs Actual**: what should appear vs what was observed
+4. **Verification**: `sample` result confirming color/alpha
+5. **Confidence**: high (pixel-verified) / medium (visual) / low (approximate)
+
+### Color Verification
+1. **Target**: what was being checked (e.g., "primary button background")
+2. **Sample coordinates**: (x, y) in source image
+3. **Actual color**: RGBA + HEX from `sample`
+4. **Expected color**: from design spec or user description
+5. **Match**: yes / no / close (within tolerance)
 
 ## Help & Version
 

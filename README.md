@@ -2,15 +2,38 @@
 
 # vistools Skills
 
-Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — visual instruments for AI coding assistants. Inspect, navigate, crop, and sample large images with structured JSON output and coordinate mapping.
+> **A coordinate-grounded visual inspection protocol for AI coding agents.**
 
-## Why
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, and sample large images with structured JSON output and coordinate mappings back to the source.
 
-Claude Code struggles with large images — reading a 3200×2400 screenshot directly loses fine detail and can exceed context limits. `vistools` solves this by giving Claude a set of image tools: inspect dimensions, generate scaled overviews, crop precise regions, and sample individual pixels. Every operation returns structured JSON with **coordinate mappings** so Claude can always trace what it sees back to the source image.
+This repository is the **plugin distribution package**. The core Rust CLI lives in [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools).
+
+## The Problem
+
+When an AI agent receives a 3200×2400 screenshot, it sees the whole thing at once — compressed, zoomed out, details lost. It might say "the button looks correct" with no way to verify the actual pixel values or trace back to the source coordinate.
+
+## Before vs After
+
+**Without vistools:**
+```
+Claude reads a 3200×2400 screenshot
+  → details lost in compression
+  → claims "the button looks correct"
+  → no way to verify
+```
+
+**With vistools:**
+```
+1. inspect → 3200×2400, needs overview
+2. overview --max-side 1200 → scaled preview, scale_factor = 0.375
+3. Spot anomaly at overview (800, 600)
+4. Map to source: (800 / 0.375, 600 / 0.375) = (2133, 1600)
+5. viewport rect → exact crop of the region
+6. sample --x 2133 --y 1600 → color is #e74c3c, not the expected #2563eb
+7. Report: "Button at source coordinate (2133, 1600) has incorrect background color"
+```
 
 ## Installation
-
-Add the marketplace and install the plugin:
 
 ```bash
 /plugin marketplace add ZeroZ-lab/vistools-skills
@@ -28,7 +51,7 @@ The `focus` argument is an optional natural-language instruction that tells Clau
 ```
 /vistools screenshot.png
 /vistools large-image.jpg "focus on the header"
-/vistools design.png "extract the login button"
+/vistools design.png "check if the login button color matches the design spec"
 ```
 
 Automated workflow:
@@ -59,6 +82,18 @@ vistools viewport rect screenshot.png bug.png \
 vistools sample screenshot.png --x 2100 --y 1550
 ```
 
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `inspect` | Read metadata + get strategy suggestion (sub-ms) |
+| `overview` | Scaled-down preview (`--max-side`) |
+| `tile` | Grid split (`--rows`/`--cols`) |
+| `viewport` | Crop region: `anchor` / `percent` / `rect` modes |
+| `sample` | Point or region color picker (read-only) |
+
+All commands return structured JSON with `coordinate_mapping` for tracing back to source coordinates.
+
 ## Coordinate Mapping
 
 Every generated image returns `coordinate_mapping`:
@@ -84,14 +119,23 @@ Map output coordinates back to source:
 skills/
 └── vistools/
     ├── SKILL.md             # Skill definition (instructions for Claude)
+    ├── VERSION              # Plugin + CLI version mapping
+    ├── CURSOR.md            # Cursor rule
     └── scripts/
-        ├── vistools                 # Bash wrapper — detects OS/arch and
-                                     # runs the matching binary below
+        ├── vistools                 # Bash wrapper — detects OS/arch
         ├── vistools-macos-arm64     # CI-built binaries
         ├── vistools-macos-x64
         ├── vistools-linux-arm64
         └── vistools-linux-x64
 ```
+
+## Version Compatibility
+
+| Plugin version | Bundled CLI version | Built from |
+|---|---|---|
+| 0.4.1 | 0.2.1 | [vistools v0.2.1](https://github.com/ZeroZ-lab/vistools) |
+
+Verify your local binary: `skills/vistools/scripts/vistools --version`
 
 ## Troubleshooting
 
@@ -119,8 +163,9 @@ source ~/.cargo/env
 
 ## Related
 
-- **[vistools](https://github.com/ZeroZ-lab/vistools)** — Rust CLI source code
-- **[SKILL.md](skills/vistools/SKILL.md)** — Skill definition
+- **[ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools)** — Rust CLI source code, tests, and design docs
+- **[SKILL.md](skills/vistools/SKILL.md)** — Full skill definition with decision policy
+- **[CURSOR.md](skills/vistools/CURSOR.md)** — Cursor IDE rule
 
 ## License
 
