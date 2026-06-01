@@ -1,7 +1,7 @@
 {
   "name": "vistools-skills",
   "owner": {
-    "name": "Zheng Jianqiao"
+    "name": "ZeroZ-lab"
   },
   "description": "Visual instruments for AI agents — inspect, navigate, crop, and sample large images. Every command returns structured JSON with coordinate mapping back to the source.",
   "plugins": [
@@ -10,7 +10,7 @@
       "source": "./",
       "description": "Visual instruments for AI agents — inspect, navigate, crop, and sample large images. Every command returns structured JSON with coordinate mapping back to the source.",
       "author": {
-        "name": "Zheng Jianqiao"
+        "name": "ZeroZ-lab"
       },
       "homepage": "https://github.com/ZeroZ-lab/vistools",
       "repository": "https://github.com/ZeroZ-lab/vistools-skills",
