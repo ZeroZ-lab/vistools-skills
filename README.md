@@ -133,7 +133,7 @@ skills/
 
 | Plugin version | Bundled CLI version | Built from |
 |---|---|---|
-| 0.5.1 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
+| 0.5.2 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
 
 Verify your local binary: `skills/vistools/scripts/vistools --version`
 
