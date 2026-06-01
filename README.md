@@ -4,8 +4,11 @@ Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — vis
 
 ## Installation
 
+Add the marketplace and install the plugin:
+
 ```bash
-/plugin install https://github.com/ZeroZ-lab/vistools-skills
+/plugin marketplace add ZeroZ-lab/vistools-skills
+/plugin install vistools@vistools-skills
 ```
 
 Binaries for macOS (arm64/x64) and Linux (arm64/x64) are bundled automatically via CI.
