@@ -4,7 +4,7 @@
 
 > **A coordinate-grounded visual inspection protocol for AI coding agents.**
 
-Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, sample, measure focus distribution, and estimate white balance in large images with structured JSON output and coordinate mappings back to the source.
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, sample, compare images, measure focus distribution, and estimate white balance in large images with structured JSON output and coordinate mappings back to the source.
 
 This repository is the **plugin distribution package**. The core Rust CLI lives in [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools).
 
@@ -60,8 +60,9 @@ Automated workflow:
 2. Generate outputs with coordinate mappings
 3. Sample colors to verify pixels
 4. Measure local sharpness when focus or blur matters
-5. Estimate focus or white balance when image quality matters
-6. Report findings with source coordinates
+5. Compare expected vs actual images when visual regression matters
+6. Estimate focus or white balance when image quality matters
+7. Report findings with source coordinates
 
 ### Example Workflow
 
@@ -94,12 +95,13 @@ vistools sample screenshot.png --x 2100 --y 1550
 | `tile` | Grid split (`--rows`/`--cols`) |
 | `viewport` | Crop region: `anchor` / `percent` / `rect` modes |
 | `sample` | Point or region color picker (read-only) |
+| `diff` | Pixel difference statistics for expected vs actual images |
 | `focus-map` | NxM sharpness grid, best cell, and focus point |
 | `white-balance` | Gray-world R/G/B gains and warm/cool or green/magenta bias |
 
 All commands return structured JSON with `coordinate_mapping` for tracing back to source coordinates.
 
-`focus-map` requires CLI `v0.2.4+`; `white-balance` requires CLI `v0.2.5+`.
+`focus-map` requires CLI `v0.2.4+`; `white-balance` requires CLI `v0.2.5+`; `diff` requires CLI `v0.2.6+`.
 
 ## Coordinate Mapping
 
@@ -140,7 +142,7 @@ skills/
 
 | Plugin version | Bundled CLI version | Built from |
 |---|---|---|
-| 0.5.4 | 0.2.5 | [vistools v0.2.5](https://github.com/ZeroZ-lab/vistools) |
+| 0.5.5 | 0.2.6 | [vistools v0.2.6](https://github.com/ZeroZ-lab/vistools) |
 
 Verify your local binary: `skills/vistools/scripts/vistools --version`
 

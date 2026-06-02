@@ -1,6 +1,6 @@
 ---
-description: Visually inspect, navigate, crop, sample colors, measure focus distribution, and estimate white balance using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
-when_to_use: Use when the user wants to analyze, crop, sample colors, measure blur or focus, estimate white balance, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
+description: Visually inspect, navigate, crop, sample colors, compare images, measure focus distribution, and estimate white balance using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+when_to_use: Use when the user wants to analyze, crop, sample colors, compare expected vs actual images, measure blur or focus, estimate white balance, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
 argument-hint: "<image-path> [focus or action]"
 arguments: [image, action]
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/vistools *) Bash(jq *) Bash(sips *) Bash(which *) Read
@@ -46,6 +46,7 @@ Follow these rules when choosing commands:
 - **Long side > 1568px → overview before any visual analysis.**
 - **User asks about a specific area but gives no coordinates →** generate overview, then infer approximate region from the overview.
 - **Making a visual claim about color →** use `sample` to verify with pixel data, not visual perception.
+- **Comparing expected vs actual screenshots →** use `diff` before making a visual regression claim.
 - **Need to know where the image is sharpest or blurriest →** use `focus-map` with a coarse grid before drilling down with `viewport`.
 - **Need to know whether a photo is warm/cool or green/magenta →** use `white-balance` to estimate gray-world gains.
 - **Reporting a UI defect →** always include source coordinates via `coordinate_mapping`.
@@ -102,6 +103,30 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools sample "$image" --rect 100,80,40,40
 Returns rounded average color, `alpha_stats` (min, max, average, transparent_ratio), and `pixel_count`.
 
 Use `sample` to verify colors, detect transparency, or confirm what a specific pixel looks like — without relying on visual interpretation.
+
+## Step 4a: Compare Images
+
+If the task involves expected vs actual screenshots, visual regression, before/after images, or "did this change?", use `diff`.
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools diff "$expected" "$actual"
+```
+
+Optional region-first workflow:
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools diff "$expected" "$actual" --rect 100,80,800,600
+```
+
+Read the JSON output:
+- `data.diff.pixel_count` — compared pixels
+- `data.diff.changed_pixels` — pixels whose RGBA values changed
+- `data.diff.changed_ratio` — changed pixels divided by compared pixels
+- `data.diff.mean_delta` — average absolute RGBA delta per pixel
+- `data.diff.max_delta` — maximum per-pixel delta
+- `data.diff.bounding_rect` — source-coordinate bounds of changed pixels, omitted when there are no changes
+
+Use `diff` to quantify visual change. It requires both images to have the same dimensions and does not generate a diff image.
 
 ## Step 4b: Measure Focus Distribution
 
@@ -241,6 +266,13 @@ Choose the template that matches the task:
 4. **Bias**: temperature and tint bias
 5. **Caveat**: no Kelvin estimate; this is directional RGB analysis
 
+### Diff Report
+1. **Compared images**: expected and actual paths
+2. **Region**: full image or source rect used for comparison
+3. **Change summary**: `changed_pixels`, `changed_ratio`, `mean_delta`, `max_delta`
+4. **Bounds**: `bounding_rect` when present
+5. **Conclusion**: whether the change is meaningful for the user's goal
+
 ### UI Bug Report
 1. **Component**: what UI element is affected
 2. **Source coordinates**: exact location via `coordinate_mapping`
@@ -264,7 +296,7 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools inspect --help     # subcommand details
 ${CLAUDE_SKILL_DIR}/scripts/vistools --version          # e.g. "vistools 0.2.0"
 ```
 
-`focus-map` is available in CLI `v0.2.4+`; `white-balance` is available in CLI `v0.2.5+`.
+`focus-map` is available in CLI `v0.2.4+`; `white-balance` is available in CLI `v0.2.5+`; `diff` is available in CLI `v0.2.6+`.
 
 ## Manual Build (advanced)
 
