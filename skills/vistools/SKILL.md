@@ -1,6 +1,6 @@
 ---
-description: Visually inspect, navigate, crop, sample colors, and measure focus distribution using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
-when_to_use: Use when the user wants to analyze, crop, sample colors, measure blur or focus, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
+description: Visually inspect, navigate, crop, sample colors, measure focus distribution, and estimate white balance using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+when_to_use: Use when the user wants to analyze, crop, sample colors, measure blur or focus, estimate white balance, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
 argument-hint: "<image-path> [focus or action]"
 arguments: [image, action]
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/vistools *) Bash(jq *) Bash(sips *) Bash(which *) Read
@@ -47,6 +47,7 @@ Follow these rules when choosing commands:
 - **User asks about a specific area but gives no coordinates →** generate overview, then infer approximate region from the overview.
 - **Making a visual claim about color →** use `sample` to verify with pixel data, not visual perception.
 - **Need to know where the image is sharpest or blurriest →** use `focus-map` with a coarse grid before drilling down with `viewport`.
+- **Need to know whether a photo is warm/cool or green/magenta →** use `white-balance` to estimate gray-world gains.
 - **Reporting a UI defect →** always include source coordinates via `coordinate_mapping`.
 - **Crop coordinates uncertain →** state "approximate" and prefer a larger crop over a too-tight one.
 - **Image unchanged after modification →** skip further navigation, report "no visual change detected."
@@ -122,6 +123,29 @@ Read the JSON output:
 - `data.focus_point` — center point of `best_cell`, useful for a follow-up `viewport`
 
 Use `focus-map` to decide where to zoom next, or to verify that the subject is actually inside the sharp region.
+
+## Step 4c: Estimate White Balance
+
+If the task involves color temperature, white balance, cast direction, warm/cool photos, or green/magenta tint, use `white-balance`.
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools white-balance "$image"
+```
+
+Optional region-first workflow:
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools white-balance "$image" --rect 100,80,800,600
+```
+
+Read the JSON output:
+- `data.white_balance.rgb_mean` — average R/G/B values in the source region
+- `data.white_balance.gray_world_gains` — channel gains implied by gray-world correction
+- `data.white_balance.temperature_bias` — `warm`, `neutral`, or `cool`
+- `data.white_balance.tint_bias` — `green`, `neutral`, or `magenta`
+- `data.white_balance.assessment` — `neutral` or `biased`
+
+Use `white-balance` to report bias direction. Do not treat it as a Kelvin color-temperature estimate.
 
 ## Step 5: Coordinate Back-Mapping
 
@@ -210,6 +234,13 @@ Choose the template that matches the task:
 4. **Evidence**: compare `best_cell.sharpness.score` against neighboring cells
 5. **Next action**: whether to crop `best_cell` with `viewport`
 
+### White Balance Report
+1. **Region**: full image or source rect used for measurement
+2. **RGB means**: average R/G/B values
+3. **Gray-world gains**: R/G/B gains from `gray_world_gains`
+4. **Bias**: temperature and tint bias
+5. **Caveat**: no Kelvin estimate; this is directional RGB analysis
+
 ### UI Bug Report
 1. **Component**: what UI element is affected
 2. **Source coordinates**: exact location via `coordinate_mapping`
@@ -233,7 +264,7 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools inspect --help     # subcommand details
 ${CLAUDE_SKILL_DIR}/scripts/vistools --version          # e.g. "vistools 0.2.0"
 ```
 
-`focus-map` is available in CLI `v0.2.3+`. If the bundled binary predates that, the source repo still has the command even if this plugin bundle has not been refreshed yet.
+`focus-map` is available in CLI `v0.2.4+`; `white-balance` is available in CLI `v0.2.5+`.
 
 ## Manual Build (advanced)
 

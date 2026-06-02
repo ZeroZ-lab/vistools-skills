@@ -4,7 +4,7 @@
 
 > **A coordinate-grounded visual inspection protocol for AI coding agents.**
 
-Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, sample, and measure focus distribution in large images with structured JSON output and coordinate mappings back to the source.
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, sample, measure focus distribution, and estimate white balance in large images with structured JSON output and coordinate mappings back to the source.
 
 This repository is the **plugin distribution package**. The core Rust CLI lives in [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools).
 
@@ -60,7 +60,8 @@ Automated workflow:
 2. Generate outputs with coordinate mappings
 3. Sample colors to verify pixels
 4. Measure local sharpness when focus or blur matters
-5. Report findings with source coordinates
+5. Estimate focus or white balance when image quality matters
+6. Report findings with source coordinates
 
 ### Example Workflow
 
@@ -94,10 +95,11 @@ vistools sample screenshot.png --x 2100 --y 1550
 | `viewport` | Crop region: `anchor` / `percent` / `rect` modes |
 | `sample` | Point or region color picker (read-only) |
 | `focus-map` | NxM sharpness grid, best cell, and focus point |
+| `white-balance` | Gray-world R/G/B gains and warm/cool or green/magenta bias |
 
 All commands return structured JSON with `coordinate_mapping` for tracing back to source coordinates.
 
-`focus-map` requires CLI `v0.2.3+`. The source repo already includes it; bundled plugin binaries may lag until the next multi-platform refresh.
+`focus-map` requires CLI `v0.2.4+`; `white-balance` requires CLI `v0.2.5+`.
 
 ## Coordinate Mapping
 
@@ -138,7 +140,7 @@ skills/
 
 | Plugin version | Bundled CLI version | Built from |
 |---|---|---|
-| 0.5.3 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
+| 0.5.4 | 0.2.5 | [vistools v0.2.5](https://github.com/ZeroZ-lab/vistools) |
 
 Verify your local binary: `skills/vistools/scripts/vistools --version`
 

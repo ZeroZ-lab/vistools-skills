@@ -1,5 +1,5 @@
 ---
-description: Visually inspect, navigate, crop, sample colors, and measure focus distribution using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+description: Visually inspect, navigate, crop, sample colors, measure focus distribution, and estimate white balance using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
 globs: "**/*.{png,jpg,jpeg,webp,gif,bmp,tiff}"
 alwaysApply: false
 ---
@@ -25,6 +25,9 @@ vistools sample "$image" --x 120 --y 80
 
 # 5. Measure which area is sharpest
 vistools focus-map "$image" --rows 3 --cols 4
+
+# 6. Estimate white balance bias
+vistools white-balance "$image"
 ```
 
 ## Decision Policy
@@ -33,6 +36,7 @@ vistools focus-map "$image" --rows 3 --cols 4
 - **Long side > 1568px** → generate overview before analysis
 - **Making a color claim** → use `sample` to verify with pixel data
 - **Need to know where text or subject is sharpest** → use `focus-map` before further cropping
+- **Need to know warm/cool or green/magenta cast** → use `white-balance`
 - **Reporting a UI defect** → always include source coordinates
 - **Coordinates uncertain** → prefer larger crop over too-tight one
 
@@ -49,6 +53,7 @@ vistools focus-map "$image" --rows 3 --cols 4
 | `sample <img> --x N --y N` | Read single pixel color |
 | `sample <img> --rect x,y,w,h` | Average color + alpha stats for region |
 | `focus-map <img> --rows N --cols N` | Grid sharpness map with best cell + focus point |
+| `white-balance <img>` | Gray-world gains and warm/cool or green/magenta bias |
 
 ## Coordinate Mapping
 
@@ -88,9 +93,15 @@ If focus matters, also report:
 - `focus_point` in source coordinates
 - whether a follow-up `viewport` crop is needed
 
+If white balance matters, also report:
+- `rgb_mean`
+- `gray_world_gains`
+- `temperature_bias` and `tint_bias`
+- that this is directional RGB analysis, not Kelvin estimation
+
 ## Links
 
 - Source: [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools)
 - Plugin: [ZeroZ-lab/vistools-skills](https://github.com/ZeroZ-lab/vistools-skills)
 
-`focus-map` requires CLI `v0.2.3+`. If your bundled plugin binary is older, update from source or wait for the next bundled binary refresh.
+`focus-map` requires CLI `v0.2.4+`; `white-balance` requires CLI `v0.2.5+`.
