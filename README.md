@@ -4,7 +4,7 @@
 
 > **A coordinate-grounded visual inspection protocol for AI coding agents.**
 
-Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, and sample large images with structured JSON output and coordinate mappings back to the source.
+Claude Code plugin for [vistools](https://github.com/ZeroZ-lab/vistools) — gives AI coding assistants the ability to inspect, navigate, crop, sample, and measure focus distribution in large images with structured JSON output and coordinate mappings back to the source.
 
 This repository is the **plugin distribution package**. The core Rust CLI lives in [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools).
 
@@ -30,7 +30,8 @@ Claude reads a 3200×2400 screenshot
 4. Map to source: (800 / 0.375, 600 / 0.375) = (2133, 1600)
 5. viewport rect → exact crop of the region
 6. sample --x 2133 --y 1600 → color is #e74c3c, not the expected #2563eb
-7. Report: "Button at source coordinate (2133, 1600) has incorrect background color"
+7. focus-map bug.png --rows 3 --cols 3 → sharpest area is not where the label should be
+8. Report: "Button at source coordinate (2133, 1600) has incorrect background color"
 ```
 
 ## Installation
@@ -58,7 +59,8 @@ Automated workflow:
 1. Inspect image → recommend overview/tile/viewport
 2. Generate outputs with coordinate mappings
 3. Sample colors to verify pixels
-4. Report findings with source coordinates
+4. Measure local sharpness when focus or blur matters
+5. Report findings with source coordinates
 
 ### Example Workflow
 
@@ -91,8 +93,11 @@ vistools sample screenshot.png --x 2100 --y 1550
 | `tile` | Grid split (`--rows`/`--cols`) |
 | `viewport` | Crop region: `anchor` / `percent` / `rect` modes |
 | `sample` | Point or region color picker (read-only) |
+| `focus-map` | NxM sharpness grid, best cell, and focus point |
 
 All commands return structured JSON with `coordinate_mapping` for tracing back to source coordinates.
+
+`focus-map` requires CLI `v0.2.3+`. The source repo already includes it; bundled plugin binaries may lag until the next multi-platform refresh.
 
 ## Coordinate Mapping
 
@@ -133,7 +138,7 @@ skills/
 
 | Plugin version | Bundled CLI version | Built from |
 |---|---|---|
-| 0.5.2 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
+| 0.5.3 | 0.2.2 | [vistools v0.2.2](https://github.com/ZeroZ-lab/vistools) |
 
 Verify your local binary: `skills/vistools/scripts/vistools --version`
 

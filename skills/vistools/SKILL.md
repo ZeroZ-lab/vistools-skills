@@ -1,6 +1,6 @@
 ---
-description: Visually inspect, navigate, crop, and sample images using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
-when_to_use: Use when the user wants to analyze, crop, sample colors, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
+description: Visually inspect, navigate, crop, sample colors, and measure focus distribution using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+when_to_use: Use when the user wants to analyze, crop, sample colors, measure blur or focus, or navigate large images. Triggered by image files or requests about screenshots, UI verification, or visual analysis.
 argument-hint: "<image-path> [focus or action]"
 arguments: [image, action]
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/vistools *) Bash(jq *) Bash(sips *) Bash(which *) Read
@@ -46,6 +46,7 @@ Follow these rules when choosing commands:
 - **Long side > 1568px → overview before any visual analysis.**
 - **User asks about a specific area but gives no coordinates →** generate overview, then infer approximate region from the overview.
 - **Making a visual claim about color →** use `sample` to verify with pixel data, not visual perception.
+- **Need to know where the image is sharpest or blurriest →** use `focus-map` with a coarse grid before drilling down with `viewport`.
 - **Reporting a UI defect →** always include source coordinates via `coordinate_mapping`.
 - **Crop coordinates uncertain →** state "approximate" and prefer a larger crop over a too-tight one.
 - **Image unchanged after modification →** skip further navigation, report "no visual change detected."
@@ -100,6 +101,27 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools sample "$image" --rect 100,80,40,40
 Returns rounded average color, `alpha_stats` (min, max, average, transparent_ratio), and `pixel_count`.
 
 Use `sample` to verify colors, detect transparency, or confirm what a specific pixel looks like — without relying on visual interpretation.
+
+## Step 4b: Measure Focus Distribution
+
+If the task involves blur, focus, text legibility, or "which area is sharpest?", use `focus-map`.
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools focus-map "$image" --rows 3 --cols 4
+```
+
+Optional region-first workflow:
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/vistools focus-map "$image" --rect 100,80,800,600 --rows 2 --cols 3
+```
+
+Read the JSON output:
+- `data.cells[]` — per-cell `region` + `sharpness`
+- `data.best_cell` — the sharpest cell in the grid
+- `data.focus_point` — center point of `best_cell`, useful for a follow-up `viewport`
+
+Use `focus-map` to decide where to zoom next, or to verify that the subject is actually inside the sharp region.
 
 ## Step 5: Coordinate Back-Mapping
 
@@ -181,6 +203,13 @@ Choose the template that matches the task:
 3. **Findings**: observations in each region
 4. **Source coordinates**: where issues are in the original image
 
+### Focus / Blur Report
+1. **Grid setup**: rows × cols, optional rect region
+2. **Best cell**: row/col + source `region`
+3. **Focus point**: source `(x, y)` from `focus_point`
+4. **Evidence**: compare `best_cell.sharpness.score` against neighboring cells
+5. **Next action**: whether to crop `best_cell` with `viewport`
+
 ### UI Bug Report
 1. **Component**: what UI element is affected
 2. **Source coordinates**: exact location via `coordinate_mapping`
@@ -203,6 +232,8 @@ ${CLAUDE_SKILL_DIR}/scripts/vistools --help             # list all commands
 ${CLAUDE_SKILL_DIR}/scripts/vistools inspect --help     # subcommand details
 ${CLAUDE_SKILL_DIR}/scripts/vistools --version          # e.g. "vistools 0.2.0"
 ```
+
+`focus-map` is available in CLI `v0.2.3+`. If the bundled binary predates that, the source repo still has the command even if this plugin bundle has not been refreshed yet.
 
 ## Manual Build (advanced)
 

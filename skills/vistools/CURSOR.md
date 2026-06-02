@@ -1,5 +1,5 @@
 ---
-description: Visually inspect, navigate, crop, and sample images using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
+description: Visually inspect, navigate, crop, sample colors, and measure focus distribution using vistools CLI. Use after modifying frontend code, analyzing screenshots, or working with large images.
 globs: "**/*.{png,jpg,jpeg,webp,gif,bmp,tiff}"
 alwaysApply: false
 ---
@@ -22,6 +22,9 @@ vistools viewport anchor "$image" crop.png --anchor center --width 800 --height 
 
 # 4. Sample a pixel color
 vistools sample "$image" --x 120 --y 80
+
+# 5. Measure which area is sharpest
+vistools focus-map "$image" --rows 3 --cols 4
 ```
 
 ## Decision Policy
@@ -29,6 +32,7 @@ vistools sample "$image" --x 120 --y 80
 - **Always inspect first** — never assume image dimensions
 - **Long side > 1568px** → generate overview before analysis
 - **Making a color claim** → use `sample` to verify with pixel data
+- **Need to know where text or subject is sharpest** → use `focus-map` before further cropping
 - **Reporting a UI defect** → always include source coordinates
 - **Coordinates uncertain** → prefer larger crop over too-tight one
 
@@ -44,6 +48,7 @@ vistools sample "$image" --x 120 --y 80
 | `viewport rect <img> <out> --x N --y N --width N --height N` | Crop by exact pixels |
 | `sample <img> --x N --y N` | Read single pixel color |
 | `sample <img> --rect x,y,w,h` | Average color + alpha stats for region |
+| `focus-map <img> --rows N --cols N` | Grid sharpness map with best cell + focus point |
 
 ## Coordinate Mapping
 
@@ -78,7 +83,14 @@ When reporting findings:
 3. **Findings**: observations per region
 4. **Source coordinates**: where issues are in original image
 
+If focus matters, also report:
+- `best_cell` row/col and source region
+- `focus_point` in source coordinates
+- whether a follow-up `viewport` crop is needed
+
 ## Links
 
 - Source: [ZeroZ-lab/vistools](https://github.com/ZeroZ-lab/vistools)
 - Plugin: [ZeroZ-lab/vistools-skills](https://github.com/ZeroZ-lab/vistools-skills)
+
+`focus-map` requires CLI `v0.2.3+`. If your bundled plugin binary is older, update from source or wait for the next bundled binary refresh.
